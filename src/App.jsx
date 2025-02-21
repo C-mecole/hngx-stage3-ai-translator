@@ -1,8 +1,7 @@
-import React, { useState,useEffect } from 'react';
+import  { useState,useEffect } from 'react';
 import { BsFillSendFill } from "react-icons/bs";
 import { SiGoogletranslate } from "react-icons/si";
-import { FaLongArrowAltLeft, FaLongArrowAltRight } from "react-icons/fa";
-// import Translator from './Example';
+
 
 const App = () => { 
   const [darkMode, setDarkMode] = useState(false);
@@ -16,6 +15,7 @@ const App = () => {
   const [detectedLanguage, setDetectedLanguage] = useState("");
   const [confidence, setConfidence] = useState(0);
   const [summary, setSummary] = useState(""); // Store summarized text
+  const [summarizeButton, setSummarizeButton] = useState(false);
 
   useEffect(() => {
     async function initTranslator() {
@@ -23,6 +23,7 @@ const App = () => {
 
       if (!("ai" in self) || !self.ai.languageDetector || !self.ai.translator) {
         document.querySelector(".not-supported-message").hidden = false;
+        alert('Not supported in your device at the moment');
         return;
       }
 
@@ -93,53 +94,54 @@ const App = () => {
 
     initTranslator();
   }, [targetLanguage]);
-
   const handleTranslate = async () => {
     if (!translator) {
       console.error("❌ Translator is not initialized.");
       return;
     }
-
+  
     setLoading(true);
-    setTranslatedText("");
-
+    setTranslatedText("Translating..."); // Show loading message
+  
     try {
       await translator.translate(inputText);
     } catch (error) {
       console.error("❌ Translation failed:", error);
       setTranslatedText("⚠️ Translation failed");
     }
-
+  
     setLoading(false);
   };
-
+  
   // Summarization function
-  const summarizeText = async () => {
-    if (!("ai" in self) || !self.ai.summarizer) {
-      console.error("❌ Summarizer API is not available.");
-      alert("Summarizer API is not available. Please enable AI APIs in Chrome.");
-      return;
-    }
+  
 
-    const wordCount = inputText.trim().split(/\s+/).length;
-  if (wordCount > 150) {
-    alert(`⚠️ The text is too long (${wordCount} words). Please reduce it to 150 words or less.`);
+useEffect(() => {
+  const wordCount = inputText.trim().split(/\s+/).length;
+  setSummarizeButton(wordCount > 150); // Show button only if words > 150
+}, [inputText]);
+
+const summarizeText = async () => {
+  if (!("ai" in self) || !self.ai.summarizer) {
+    console.error("❌ Summarizer API is not available.");
     return;
   }
+
+  setLoading(true);
+  setSummary("Summarizing..."); // Show loading message
+
+  try {
+    const summarizer = await self.ai.summarizer.create();
+    const summaryResult = await summarizer.summarize(inputText);
+    setSummary(summaryResult);
+  } catch (error) {
+    console.error("❌ Summarization error:", error);
+    setSummary("⚠️ An error occurred while summarizing.");
+  }
+  setLoading(false);
+};
+
   
-    setLoading(true);
-  
-    try {
-      const summarizer = await self.ai.summarizer.create();
-      const summaryResult = await summarizer.summarize(inputText);
-      setSummary(summaryResult);
-    } catch (error) {
-      console.error("❌ Summarization error:", error);
-      setSummary("⚠️ An error occurred while summarizing.");
-    }
-  
-    setLoading(false);
-  };
   
   
   
@@ -180,22 +182,6 @@ const App = () => {
       <div className={`pt-5 transition-all duration-500 ${!visible ? 'opacity-100 scale-100' : 'opacity-0 scale-95 hidden'}`}>
 
         <div className="bg-slate-100 flex w-fit gap-4 justify-center items-center px-2 shadow ml-16">
-          <select
-          
-          className="p-2 outline-none bg-transparent rounded">
-            <option value="en">English</option>
-            <option value="es">Spanish</option>
-            <option value="fr">French</option>
-            <option value="tr">Turkish</option>
-            <option value="ru">Russia</option>
-            <option value="pt">Portuguese</option>
-          </select>
-
-          <div className="flex flex-col justify-center items-center">
-            <FaLongArrowAltLeft />
-            <FaLongArrowAltRight />
-          </div>
-
           <select 
           value={targetLanguage}
           onChange={(e) => setTargetLanguage(e.target.value)}
@@ -212,9 +198,11 @@ const App = () => {
       </div>
       {/* starts here */}
         <div className='min-h-[65vh] flex flex-col gap-4 p-4 relative'>
-        <button 
-        onClick={summarizeText}
-        className='p-3 bg-rose-800 rounded-xl shadow-md shadow-black text-white absolute right-3 bottom-10'>Summarize</button>
+        {summarizeButton && (
+          <button 
+          onClick={summarizeText}
+          className='p-3 bg-rose-800 rounded-xl shadow-md shadow-black text-white absolute right-3 bottom-10'>Summarize</button>
+        )}
           <div className={`${darkMode? 'bg-[#4b55638d]': 'bg-[#ffffff8f]'} min-h-[27vh] w-3/5 rounded-xl place-self-end shadow p-1`}>
           <textarea name="text" id="text"
           placeholder='enter text here'
@@ -224,7 +212,7 @@ const App = () => {
           ></textarea>
           {summary && (
                 <div className={`${darkMode? 'text-gray-300': 'text-black'} p-4`}>
-                  <p>{summary}</p>
+                  <p>{ summary}</p>
                 </div>
               )}
           </div>
@@ -269,7 +257,6 @@ const App = () => {
         
       </div>
     </main>
-    {/* <Translator/> */}
     </>
   )
 }
