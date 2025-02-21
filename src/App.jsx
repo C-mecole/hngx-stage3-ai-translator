@@ -22,8 +22,8 @@ const App = () => {
       console.log("🔍 Checking AI Translator API...");
 
       if (!("ai" in self) || !self.ai.languageDetector || !self.ai.translator) {
-        document.querySelector(".not-supported-message").hidden = false;
         alert('Not supported in your device at the moment');
+        // document.querySelector(".not-supported-message").hidden = false;
         return;
       }
 
@@ -124,6 +124,7 @@ useEffect(() => {
 const summarizeText = async () => {
   if (!("ai" in self) || !self.ai.summarizer) {
     console.error("❌ Summarizer API is not available.");
+    alert("❌ Summarizer API is not available.");
     return;
   }
 
@@ -141,9 +142,6 @@ const summarizeText = async () => {
   setLoading(false);
 };
 
-  
-  
-  
   
   return (
     <>
@@ -210,13 +208,10 @@ const summarizeText = async () => {
         onChange={(e) => setInputText(e.target.value)}
           className={`min-h-[27vh] w-full bg-transparent outline-none  overflow-hidden resize-none p-4 ${darkMode? 'text-gray-300': 'text-black'}`}
           ></textarea>
-          {summary && (
-                <div className={`${darkMode? 'text-gray-300': 'text-black'} p-4`}>
-                  <p>{ summary}</p>
-                </div>
-              )}
+          
           </div>
           <div className={`${darkMode? 'bg-[#4b55638d]': 'bg-[#ffffff8f]'} min-h-[27vh] w-3/5 rounded-xl place-self-start shadow p-4 relative`}>
+          
           <div className={`absolute bottom-14 p-3 bg-white transition-all duration-500 transform
           ${prompt ? 'opacity-100 scale-100 translate-x-0 -right-60' : 'opacity-0 scale-95 -translate-x-10 left-0 hidden'} 
           rounded-lg shadow-md shadow-red-300`}
@@ -231,9 +226,18 @@ const summarizeText = async () => {
             <li>Turkish</li>
           </ul>
         </div>
+          <div className='min-h-[20vh]'>
           {translatedText && (
           <p className={`${darkMode? 'text-gray-300': 'text-black'}`}>{translatedText}</p>
       )}
+          </div>
+        <div>
+        {summary && (
+                <div className={`${darkMode? 'text-gray-300': 'text-black'} p-4`}>
+                  <p>{ summary}</p>
+                </div>
+              )}
+        </div>
           </div>
         </div>
         </div>
