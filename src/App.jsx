@@ -14,7 +14,7 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [detectedLanguage, setDetectedLanguage] = useState("");
   const [confidence, setConfidence] = useState(0);
-  const [summary, setSummary] = useState(""); // Store summarized text
+  const [summary, setSummary] = useState(""); 
   const [summarizeButton, setSummarizeButton] = useState(false);
 
   useEffect(() => {
@@ -23,7 +23,6 @@ const App = () => {
 
       if (!("ai" in self) || !self.ai.languageDetector || !self.ai.translator) {
         alert('Not supported in your device at the moment');
-        // document.querySelector(".not-supported-message").hidden = false;
         return;
       }
 
@@ -101,8 +100,7 @@ const App = () => {
     }
   
     setLoading(true);
-    setTranslatedText("Translating..."); // Show loading message
-  
+    setTranslatedText("Translating..."); 
     try {
       await translator.translate(inputText);
     } catch (error) {
@@ -113,39 +111,48 @@ const App = () => {
     setLoading(false);
   };
   
-  // Summarization function
   
 
-useEffect(() => {
-  const wordCount = inputText.trim().split(/\s+/).length;
-  setSummarizeButton(wordCount > 150); // Show button only if words > 150
-}, [inputText]);
+  useEffect(() => {
+    const wordCount = translatedText.trim().split(/\s+/).length;
+    setSummarizeButton(wordCount > 150); 
+  }, [translatedText]);
 
-const summarizeText = async () => {
-  if (!("ai" in self) || !self.ai.summarizer) {
-    console.error("❌ Summarizer API is not available.");
-    alert("❌ Summarizer API is not available.");
-    return;
-  }
+  const summarizeText = async () => {
+    if (!("ai" in self) || !self.ai.summarizer) {
+      console.error("❌ Summarizer API is not available.");
+      alert("❌ Summarizer API is not available.");
+      return;
+    }
 
-  setLoading(true);
-  setSummary("Summarizing..."); // Show loading message
-
-  try {
-    const summarizer = await self.ai.summarizer.create();
-    const summaryResult = await summarizer.summarize(inputText);
-    setSummary(summaryResult);
-  } catch (error) {
-    console.error("❌ Summarization error:", error);
-    setSummary("⚠️ An error occurred while summarizing.");
-  }
-  setLoading(false);
-};
-
+    const detector = await self.ai.languageDetector.create();
+    const detectionResult = await detector.detect(translatedText.trim());
+    const detectedLang = detectionResult[0].detectedLanguage;
   
+    if (detectedLang !== "en") {
+      alert("Summarization only works for English text!");
+      return;
+    }
+  
+    setLoading(true);
+    setSummary("Summarizing...");
+  
+    try {
+      const summarizer = await self.ai.summarizer.create();
+      const summaryResult = await summarizer.summarize(translatedText);
+      setSummary(summaryResult);
+    } catch (error) {
+      console.error("❌ Summarization error:", error);
+      setSummary("⚠️ An error occurred while summarizing.");
+    }
+  
+    setLoading(false);
+  };
+
+
   return (
     <>
-    <main className={`flex justify-center items-center py-8 ${darkMode? 'bg-gray-500': 'bg-transparent'}`}>
+    <main className={`h-[100vh] overflow-hidden flex justify-center items-center py-8 ${darkMode? 'bg-gray-500': 'bg-transparent'}`}>
       <div className={`min-h-[90vh] xl:w-[50vw] md:w-[80vw] w-[90vw] rounded-2xl overflow-x-hidden  bg-gray-200 flex flex-col ${darkMode? 'bg-gray-900': 'bg-gray-200'}`}>
         <div className='h-20 bg-rose-800 w-full flex-grow-0 flex-shrink-0 flex justify-between items-center p-5'>
         {/* header components */}
@@ -176,7 +183,6 @@ const summarizeText = async () => {
         <SiGoogletranslate size={30} color="white" />
       </button>
       
-      
       <div className={`pt-5 transition-all duration-500 ${!visible ? 'opacity-100 scale-100' : 'opacity-0 scale-95 hidden'}`}>
 
         <div className="bg-slate-100 flex w-fit gap-4 justify-center items-center px-2 shadow ml-16">
@@ -194,7 +200,6 @@ const summarizeText = async () => {
         </div>
       </div>
       </div>
-      {/* starts here */}
         <div className='min-h-[65vh] flex flex-col gap-4 p-4 relative'>
         {summarizeButton && (
           <button 
@@ -206,7 +211,7 @@ const summarizeText = async () => {
           placeholder='enter text here'
           value={inputText}
         onChange={(e) => setInputText(e.target.value)}
-          className={`min-h-[27vh] w-full bg-transparent outline-none  overflow-hidden resize-none p-4 ${darkMode? 'text-gray-300': 'text-black'}`}
+          className={`min-h-[27vh] w-full bg-transparent outline-none  overflow-y-scroll custom-scrollbar resize-none p-4 ${darkMode? 'text-gray-300': 'text-black'}`}
           ></textarea>
           
           </div>
